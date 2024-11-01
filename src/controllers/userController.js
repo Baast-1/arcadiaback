@@ -51,7 +51,7 @@ const getUser = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
-    const { role = 'gestionnaire', firstname, lastname, phone, email } = req.body;
+    const { role = 'admin', firstname, lastname, phone, email } = req.body;
     const picture = req.file ? req.file.filename : null;
 
     try {
@@ -128,7 +128,7 @@ const createUserClient = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { role = 'gestionnaire', firstname, lastname, phone, email, password } = req.body;
+    const { role, firstname, lastname, phone, email, password } = req.body;
     const picture = req.file ? req.file.filename : null;
     try {
         const user = await User.findByPk(id);

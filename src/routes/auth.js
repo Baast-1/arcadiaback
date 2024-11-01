@@ -21,7 +21,41 @@ router.post('/email', async (req, res) => {
     }
 });
 
-// Login Route
+router.post('/register', async (req, res) => {
+    const { email, password, firstname, lastname } = req.body;
+
+    try {
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Email already in use', errorCode: 'EMAIL_IN_USE' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({
+            email,
+            password: hashedPassword,
+            firstname,
+            lastname,
+            role: 'user'
+        });
+
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            console.error('JWT_SECRET non défini');
+            return res.status(500).json({ message: 'Erreur de configuration du serveur' });
+        }
+
+        const token = jwt.sign({ user: { id: newUser.id, role: newUser.role } }, secret, {
+            expiresIn: '1h',
+        });
+
+        res.status(201).json({ message: 'User registered successfully', token });
+    } catch (error) {
+        console.error('Erreur lors de l\'enregistrement:', error);
+        res.status(500).json({ message: 'Erreur serveur', error });
+    }
+});
+
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -61,12 +95,10 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Route pour vérifier si le token est valide
 router.get('/verify-token', authenticateJWT, (req, res) => {
     res.status(200).json({ message: 'Token valide', user: req.user.email });
 });
 
-// Logout Route
 router.post('/logout', (req, res) => {
     res.json({ message: 'Déconnexion réussie' });
 });
