@@ -4,11 +4,9 @@ const cors = require('cors');
 require('dotenv').config();
 const os = require('os');
 const sequelize = require('./src/config/database');
-
 const app = express();
 
 const PORT = process.env.PORT || 3001;
-
 const corsOptions = {
     origin: true,
     optionsSuccessStatus: 200,
@@ -18,23 +16,15 @@ if (!process.env.JWT_SECRET) {
     console.error('JWT_SECRET is not defined');
     process.exit(1);
 }
-
-// Middleware
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
-
-// Use routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
-
-
-// Static file serving
 app.use('/uploads', express.static('uploads'));
 
-// Get local IP address
 const getLocalIPAddress = () => {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
@@ -47,7 +37,6 @@ const getLocalIPAddress = () => {
     return 'localhost';
 };
 
-// Sync database and start server
 sequelize.sync({ alter: true })
     .then(() => {
         console.log('Database synchronized successfully.');
