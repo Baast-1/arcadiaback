@@ -58,36 +58,25 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
     try {
-        console.log('Received credentials:', { email, password });
-
         const user = await User.findOne({ where: { email } });
-
         if (!user) {
             console.error('Utilisateur non trouvé');
             return res.status(400).json({ error: 'User not found', errorCode: 'USER_NOT_FOUND' });
         }
-
-        console.log('Stored password hash:', user.password);
-
         const isMatch = await bcrypt.compare(password, user.password);
-
         if (!isMatch) {
             console.error('Mot de passe incorrect');
             return res.status(401).json({ message: 'Mot de passe incorrect', errorCode: 'INVALID_PASSWORD' });
         }
-
         const secret = process.env.JWT_SECRET;
         if (!secret) {
             console.error('JWT_SECRET non défini');
             return res.status(500).json({ message: 'Erreur de configuration du serveur' });
         }
-
-        const token = jwt.sign({ user: { id: user.id, role: user.role, company: user.company_id } }, secret, {
+        const token = jwt.sign({ user: { id: user.id, role: user.role} }, secret, {
             expiresIn: '1h',
         });
-
         res.json({ message: 'Connexion réussie', token });
     } catch (error) {
         console.error('Erreur lors de la connexion:', error);
