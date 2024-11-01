@@ -13,7 +13,7 @@ const corsOptions = {
     credentials: true,
 };
 if (!process.env.JWT_SECRET) {
-    console.error('JWT_SECRET is not defined');
+    console.error('JWT_SECRET est pas defini');
     process.exit(1);
 }
 app.use(cors(corsOptions));
@@ -21,8 +21,12 @@ app.use(bodyParser.json());
 
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
+const hourRoutes = require('./src/routes/hours');
+
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/hours', hourRoutes);
+
 app.use('/uploads', express.static('uploads'));
 
 const getLocalIPAddress = () => {
@@ -39,17 +43,17 @@ const getLocalIPAddress = () => {
 
 sequelize.sync({ alter: true })
     .then(() => {
-        console.log('Database synchronized successfully.');
-        console.log('Database & tables created!');
+        console.log('Base de données synchronisée avec succès.');
+        console.log('Base de données et tables créées !');
         return sequelize.authenticate();
     })
     .then(() => {
-        console.log('Connected to the database successfully.');
+        console.log('Connecté à la base de données avec succès.');
         app.listen(PORT, () => {
             const localIP = getLocalIPAddress();
-            console.log(`Server running at http://${localIP}:${PORT}`);
+            console.log(`Serveur en cours d'exécution à l'adresse http://${localIP}:${PORT}`);
         });
     })
     .catch(err => {
-        console.error('Unable to connect to the database:', err);
+        console.error('Impossible de se connecter à la base de données :', err);
     });
