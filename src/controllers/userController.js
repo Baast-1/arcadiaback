@@ -4,8 +4,6 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const upload = require('../components/upload');
-const deleteFile = require('../components/deleteFile');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
@@ -180,8 +178,8 @@ const passwordReset = async (req, res) => {
 module.exports = {
     getUsers,
     getUser,
-    createUser: [upload.single('picture'), createUser],
-    updateUser: [upload.single('picture'), updateUser],
+    createUser,
+    updateUser,
     deleteUser,
     passwordReset,
 };
