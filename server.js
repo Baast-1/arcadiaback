@@ -22,10 +22,12 @@ app.use(bodyParser.json());
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const hourRoutes = require('./src/routes/hours');
+const serviceRoutes = require('./src/routes/services');
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/hours', hourRoutes);
+app.use('/services', serviceRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
