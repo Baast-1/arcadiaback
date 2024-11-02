@@ -3,9 +3,7 @@ const Hours = require('../models/hours');
 const createHour = async (req, res) => {
     try {
         const { name, start, end } = req.body;
-        console.log('Request body:', req.body);
         const newHour = await Hours.create({ name, start, end });
-        console.log('New hour created:', newHour);
         res.status(201).json(newHour);
     } catch (error) {
         res.status(500).json({ error: error.message });
