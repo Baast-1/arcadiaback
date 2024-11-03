@@ -1,76 +1,74 @@
-const Services = require('../models/services');
+const Habitats = require('../models/habitats');
 const Pictures = require('../models/pictures');
 const path = require('path');
 const fs = require('fs');
 
-
-const createService = async (req, res) => {
+const createHabitat = async (req, res) => {
     try {
         const { name, description } = req.body;
-        const newService = await Services.create({ name, description });
+        const newHabitat = await Habitats.create({ name, description });
 
         if (req.file) {
             await Pictures.create({
                 route: req.file.path,
-                service_id: newService.id,
+                habitat_id: newHabitat.id,
             });
         }
-        const serviceWithPicture = await Services.findByPk(newService.id, {
+        const habitatWithPicture = await Habitats.findByPk(newHabitat.id, {
             include: [{ model: Pictures, as: 'pictures' }]
         });
 
-        res.status(201).json(serviceWithPicture);
+        res.status(201).json(habitatWithPicture);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-
-const getServices = async (req, res) => {
+const getHabitats = async (req, res) => {
     try {
-        const services = await Services.findAll({
+        const habitats = await Habitats.findAll({
             include: [{ model: Pictures, as: 'pictures' }]
         });
-        res.status(200).json(services);
+        res.status(200).json(habitats);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-const getServiceById = async (req, res) => {
+const getHabitatById = async (req, res) => {
     try {
         const { id } = req.params;
-        const service = await Services.findByPk(id, {
+        const habitat = await Habitats.findByPk(id, {
             include: [{ model: Pictures, as: 'pictures' }]
         });
-        if (service) {
-            res.status(200).json(service);
+        if (habitat) {
+            res.status(200).json(habitat);
         } else {
-            res.status(404).json({ error: 'Service not found' });
+            res.status(404).json({ error: 'Habitat not found' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-
-const updateService = async (req, res) => {
+const updateHabitat = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
-        const [updated] = await Services.update({ name, description }, {
+        const [updated] = await Habitats.update({ name, description }, {
             where: { id }
         });
 
         if (updated) {
-            const updatedService = await Services.findByPk(id, {
+            const updatedHabitat = await Habitats.findByPk(id, {
                 include: [{ model: Pictures, as: 'pictures' }]
             });
 
             if (req.file) {
-                if (updatedService.pictures.length > 0) {
-                    for (const picture of updatedService.pictures) {
+                if (updatedHabitat.pictures.length > 0) {
+                    for (const picture of updatedHabitat.pictures) {
                         const filePath = path.resolve(__dirname, '..', 'uploads', path.basename(picture.route));
+                        
                         if (fs.existsSync(filePath)) {
                             fs.unlink(filePath, (err) => {
                                 if (err) {
@@ -82,34 +80,33 @@ const updateService = async (req, res) => {
                         }
                     }
                     await Pictures.destroy({
-                        where: { service_id: id }
+                        where: { habitat_id: id }
                     });
                 }
                 await Pictures.create({
                     route: req.file.path,
-                    service_id: id,
+                    habitat_id: id,
                 });
             }
-            const serviceWithPicture = await Services.findByPk(id, {
+
+            const habitatWithPicture = await Habitats.findByPk(id, {
                 include: [{ model: Pictures, as: 'pictures' }]
             });
-            res.status(200).json(serviceWithPicture);
+            res.status(200).json(habitatWithPicture);
         } else {
-            res.status(404).json({ error: 'Service non trouvé' });
+            res.status(404).json({ error: 'Habitat non trouvé' });
         }
     } catch (error) {
-        console.error(`Erreur lors de la mise à jour du service: ${error.message}`);
+        console.error(`Erreur lors de la mise à jour de l'habitat: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 };
 
-
-
-const deleteService = async (req, res) => {
+const deleteHabitat = async (req, res) => {
     try {
         const { id } = req.params;
         const pictures = await Pictures.findAll({
-            where: { service_id: id }
+            where: { habitat_id: id }
         });
 
         pictures.forEach((picture) => {
@@ -119,27 +116,26 @@ const deleteService = async (req, res) => {
             });
         });
         await Pictures.destroy({
-            where: { service_id: id }
+            where: { habitat_id: id }
         });
-        const deleted = await Services.destroy({
+        const deleted = await Habitats.destroy({
             where: { id }
         });
 
         if (deleted) {
             res.status(204).json();
         } else {
-            res.status(404).json({ error: 'Service non trouvé' });
+            res.status(404).json({ error: 'Habitat non trouvé' });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-
 module.exports = {
-    createService,
-    getServices,
-    getServiceById,
-    updateService,
-    deleteService
+    createHabitat,
+    getHabitats,
+    getHabitatById,
+    updateHabitat,
+    deleteHabitat
 };
