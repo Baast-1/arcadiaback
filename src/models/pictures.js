@@ -18,6 +18,14 @@ const Pictures = sequelize.define('pictures', {
             key: 'id',
         },
     },
+    habitat_id: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'habitats',
+            key: 'id',
+        },
+        onDelete: 'CASCADE',
+    },
 }, {
     tableName: 'pictures',
     timestamps: true,
