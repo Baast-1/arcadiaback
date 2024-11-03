@@ -23,11 +23,15 @@ const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const hourRoutes = require('./src/routes/hours');
 const serviceRoutes = require('./src/routes/services');
+const habitatRoutes = require('./src/routes/habitats');
+const commentRoutes = require('./src/routes/comments');
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/hours', hourRoutes);
 app.use('/services', serviceRoutes);
+app.use('/habitats', habitatRoutes);
+app.use('/comments', commentRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
