@@ -1,8 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
 const Pictures = require('./pictures');
+const Habitats = require('./habitats');
 
-const Services = sequelize.define('services', {
+const Animals = sequelize.define('animals', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -12,14 +13,20 @@ const Services = sequelize.define('services', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    description: {
-        type: DataTypes.TEXT,
+    race: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    habitat_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
 }, {
-    tableName: 'services',
+    tableName: 'animals',
     timestamps: true,
     underscored: true,
 });
 
-module.exports = Services;
+
+
+module.exports = Animals;

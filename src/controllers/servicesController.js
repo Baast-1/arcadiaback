@@ -2,6 +2,7 @@ const Services = require('../models/services');
 const Pictures = require('../models/pictures');
 const path = require('path');
 const fs = require('fs');
+const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads');
 
 
 const createService = async (req, res) => {
@@ -58,38 +59,33 @@ const updateService = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
-        const [updated] = await Services.update({ name, description }, {
-            where: { id }
-        });
+        const [updated] = await Services.update(
+            { name, description },
+            { where: { id } }
+        );
 
         if (updated) {
             const updatedService = await Services.findByPk(id, {
                 include: [{ model: Pictures, as: 'pictures' }]
             });
 
-            if (req.file) {
-                if (updatedService.pictures.length > 0) {
-                    for (const picture of updatedService.pictures) {
-                        const filePath = path.resolve(__dirname, '..', 'uploads', path.basename(picture.route));
-                        if (fs.existsSync(filePath)) {
-                            fs.unlink(filePath, (err) => {
-                                if (err) {
-                                    console.error(`Erreur lors de la suppression du fichier : ${err}`);
-                                }
-                            });
-                        } else {
-                            console.error(`Fichier non trouvé : ${filePath}`);
-                        }
+            if (updatedService.pictures.length > 0) {
+                const oldPicture = updatedService.pictures[0];
+                const filePath = path.isAbsolute(oldPicture.route)
+                    ? oldPicture.route
+                    : path.join(UPLOADS_DIR, path.basename(oldPicture.route));
+
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Erreur lors de la suppression de l'image : ${filePath}`, err);
                     }
-                    await Pictures.destroy({
-                        where: { service_id: id }
-                    });
-                }
-                await Pictures.create({
-                    route: req.file.path,
-                    service_id: id,
                 });
+                await Pictures.destroy({ where: { id: oldPicture.id } });
             }
+            const newPicture = await Pictures.create({
+                route: req.file.path,
+                service_id: id,
+            });
             const serviceWithPicture = await Services.findByPk(id, {
                 include: [{ model: Pictures, as: 'pictures' }]
             });
@@ -104,7 +100,6 @@ const updateService = async (req, res) => {
 };
 
 
-
 const deleteService = async (req, res) => {
     try {
         const { id } = req.params;
@@ -112,10 +107,15 @@ const deleteService = async (req, res) => {
             where: { service_id: id }
         });
 
-        pictures.forEach((picture) => {
-            const filePath = path.resolve(__dirname, '../uploads', path.basename(picture.route));
+        pictures.forEach(picture => {
+            const filePath = path.isAbsolute(picture.route) 
+                ? picture.route 
+                : path.join(UPLOADS_DIR, path.basename(picture.route));
+
             fs.unlink(filePath, (err) => {
-                if (err) console.error(`Erreur lors de la suppression du fichier: ${err}`);
+                if (err) {
+                    console.error(`Failed to delete old picture: ${filePath}`, err);
+                }
             });
         });
         await Pictures.destroy({
