@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
 const Pictures = require('./pictures');
 const Comments = require('./comments');
+const Animals = require('./animals');
 
 const Habitats = sequelize.define('habitats', {
     id: {
@@ -21,16 +22,6 @@ const Habitats = sequelize.define('habitats', {
     tableName: 'habitats',
     timestamps: true,
     underscored: true,
-});
-
-Habitats.hasMany(Pictures, {
-    foreignKey: 'habitat_id',
-    as: 'pictures',
-});
-
-Habitats.hasMany(Comments, {
-    foreignKey: 'habitat_id',
-    as: 'comments',
 });
 
 module.exports = Habitats;
