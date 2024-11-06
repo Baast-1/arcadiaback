@@ -2,6 +2,9 @@ const Habitats = require('../models/habitats');
 const Pictures = require('../models/pictures');
 const path = require('path');
 const fs = require('fs');
+const Comments = require('../models/comments');
+const Animals = require('../models/animals');
+const UPLOADS_DIR = path.join(__dirname, '..', '..', 'uploads');
 
 const createHabitat = async (req, res) => {
     try {
@@ -51,13 +54,15 @@ const getHabitatById = async (req, res) => {
     }
 };
 
+
 const updateHabitat = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description } = req.body;
-        const [updated] = await Habitats.update({ name, description }, {
-            where: { id }
-        });
+        const [updated] = await Habitats.update(
+            { name, description },
+            { where: { id } }
+        );
 
         if (updated) {
             const updatedHabitat = await Habitats.findByPk(id, {
@@ -66,22 +71,20 @@ const updateHabitat = async (req, res) => {
 
             if (req.file) {
                 if (updatedHabitat.pictures.length > 0) {
-                    for (const picture of updatedHabitat.pictures) {
-                        const filePath = path.resolve(__dirname, '..', 'uploads', path.basename(picture.route));
-                        
-                        if (fs.existsSync(filePath)) {
-                            fs.unlink(filePath, (err) => {
-                                if (err) {
-                                    console.error(`Erreur lors de la suppression du fichier : ${err}`);
-                                }
-                            });
-                        } else {
-                            console.error(`Fichier non trouvé : ${filePath}`);
-                        }
+                    const oldPicture = updatedHabitat.pictures[0];
+                    const filePath = path.isAbsolute(oldPicture.route)
+                        ? oldPicture.route
+                        : path.join(UPLOADS_DIR, path.basename(oldPicture.route));
+                    if (fs.existsSync(filePath)) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) {
+                                console.error(`Erreur lors de la suppression du fichier : ${err}`);
+                            }
+                        });
+                    } else {
+                        console.error(`Fichier non trouvé : ${filePath}`);
                     }
-                    await Pictures.destroy({
-                        where: { habitat_id: id }
-                    });
+                    await Pictures.destroy({ where: { id: oldPicture.id } });
                 }
                 await Pictures.create({
                     route: req.file.path,
@@ -108,14 +111,21 @@ const deleteHabitat = async (req, res) => {
         const pictures = await Pictures.findAll({
             where: { habitat_id: id }
         });
+        pictures.forEach(picture => {
+            const filePath = path.isAbsolute(picture.route) 
+                ? picture.route 
+                : path.join(UPLOADS_DIR, path.basename(picture.route));
 
-        pictures.forEach((picture) => {
-            const filePath = path.resolve(__dirname, '../uploads', path.basename(picture.route));
             fs.unlink(filePath, (err) => {
-                if (err) console.error(`Erreur lors de la suppression du fichier: ${err}`);
+                if (err) {
+                    console.error(`Erreur lors de la suppression de l'image : ${filePath}`, err);
+                }
             });
         });
         await Pictures.destroy({
+            where: { habitat_id: id }
+        });
+        await Comments.destroy({
             where: { habitat_id: id }
         });
         const deleted = await Habitats.destroy({
@@ -128,9 +138,12 @@ const deleteHabitat = async (req, res) => {
             res.status(404).json({ error: 'Habitat non trouvé' });
         }
     } catch (error) {
+        console.error(`Erreur lors de la suppression de l'habitat: ${error.message}`);
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 module.exports = {
     createHabitat,

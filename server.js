@@ -25,6 +25,11 @@ const hourRoutes = require('./src/routes/hours');
 const serviceRoutes = require('./src/routes/services');
 const habitatRoutes = require('./src/routes/habitats');
 const commentRoutes = require('./src/routes/comments');
+const animalRoutes = require('./src/routes/animals');
+const feedRoutes = require('./src/routes/feeds');
+const reportsRoutes = require('./src/routes/reports');
+
+require('./src/models/associations');
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
@@ -32,6 +37,9 @@ app.use('/hours', hourRoutes);
 app.use('/services', serviceRoutes);
 app.use('/habitats', habitatRoutes);
 app.use('/comments', commentRoutes);
+app.use('/animals', animalRoutes);
+app.use('/feeds', feedRoutes);
+app.use('/reports', reportsRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
