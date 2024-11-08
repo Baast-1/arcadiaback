@@ -5,6 +5,7 @@ require('dotenv').config();
 const os = require('os');
 const sequelize = require('./src/config/database');
 const app = express();
+const mongoose = require('./src/config/mongodb')
 
 const PORT = process.env.PORT || 3001;
 const corsOptions = {
@@ -19,6 +20,7 @@ if (!process.env.JWT_SECRET) {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
+const avisMongoRoutes = require('./src/routes/avisMongo');
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/user');
 const hourRoutes = require('./src/routes/hours');
@@ -40,6 +42,7 @@ app.use('/comments', commentRoutes);
 app.use('/animals', animalRoutes);
 app.use('/feeds', feedRoutes);
 app.use('/reports', reportsRoutes);
+app.use('/avis', avisMongoRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
