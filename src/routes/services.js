@@ -7,7 +7,7 @@ const { authorizeRoles } = require('../middleware/roleMiddleware');
 const router = express.Router();
 
 router.post('/',upload.single('picture'), authenticateJWT, authorizeRoles('admin', 'veterinaire'), servicesController.createService);
-router.get('/', authenticateJWT, authorizeRoles('admin', 'veterinaire'), servicesController.getServices);
+router.get('/', servicesController.getServices);
 router.get('/:id', authenticateJWT, authorizeRoles('admin', 'veterinaire'), servicesController.getServiceById);
 router.put('/:id',upload.single('picture'), authenticateJWT, authorizeRoles('admin', 'veterinaire'), servicesController.updateService);
 router.delete('/:id',upload.single('picture'), authenticateJWT, authorizeRoles('admin', 'veterinaire'), servicesController.deleteService);
