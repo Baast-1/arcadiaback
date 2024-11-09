@@ -6,7 +6,7 @@ const { authorizeRoles } = require('../middleware/roleMiddleware');
 const router = express.Router();
 
 router.post('/', authenticateJWT, authorizeRoles('admin'), hoursController.createHour);
-router.get('/', authenticateJWT, authorizeRoles('admin', 'veterinaire', 'employe'), hoursController.getHours);
+router.get('/', hoursController.getHours);
 router.get('/:id', authenticateJWT, authorizeRoles('admin'), hoursController.getHourById);
 router.put('/:id', authenticateJWT, authorizeRoles('admin'), hoursController.updateHour);
 router.delete('/:id', authenticateJWT, authorizeRoles('admin'), hoursController.deleteHour);
