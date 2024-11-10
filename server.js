@@ -48,6 +48,7 @@ app.use('/contact', contactRoutes);
 
 app.use('/uploads', express.static('uploads'));
 
+
 const getLocalIPAddress = () => {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
