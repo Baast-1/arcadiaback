@@ -30,6 +30,7 @@ const commentRoutes = require('./src/routes/comments');
 const animalRoutes = require('./src/routes/animals');
 const feedRoutes = require('./src/routes/feeds');
 const reportsRoutes = require('./src/routes/reports');
+const contactRoutes = require('./src/routes/contact');
 
 require('./src/models/associations');
 
@@ -43,8 +44,10 @@ app.use('/animals', animalRoutes);
 app.use('/feeds', feedRoutes);
 app.use('/reports', reportsRoutes);
 app.use('/avis', avisMongoRoutes);
+app.use('/contact', contactRoutes);
 
 app.use('/uploads', express.static('uploads'));
+
 
 const getLocalIPAddress = () => {
     const interfaces = os.networkInterfaces();
