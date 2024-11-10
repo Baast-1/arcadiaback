@@ -6,6 +6,10 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
 
 function generatePassword(length) {
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -46,6 +50,7 @@ const getUser = async (req, res) => {
     }
 };
 
+
 const createUser = async (req, res) => {
     const { role = 'admin', firstname, lastname, phone, email } = req.body;
     const picture = req.file ? req.file.filename : null;
@@ -56,39 +61,39 @@ const createUser = async (req, res) => {
             deleteFile(picture);
             return res.status(400).json({ error: 'Email already in use', errorCode: 'EMAIL_IN_USE' });
         }
+
         const newPassword = generatePassword(8);
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const newUser = await User.create({
             role, firstname, lastname, phone, email, password: hashedPassword, picture
         });
 
-        let transporter = nodemailer.createTransport({
-            host: "sandbox.smtp.mailtrap.io",
-            port: 2525,
-            auth: {
-                user: "430530af22850c",
-                pass: "509de0bf66b5ca"
-            }
-        });
-        let mailOptions = {
-            from: 'no-reply@example.com',
-            to: email,
+        mg.messages.create('sandbox-123.mailgun.org', {
+            from: "Excited User <mailgun@sandboxa8928caf774840d9ba9b17e469380c4e.mailgun.org>", 
+            to: [email],
             subject: 'Votre nouveau mot de passe',
-            text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`
-        };
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                deleteFile(picture);
-                return res.status(400).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SEND' });
-            } else {
-                res.status(201).json({ message: 'User created successfully and email sent', user: newUser });
-            }
+            text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`,
+            html: `<h1>Bonjour ${firstname},</h1><p>Votre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}</p>`
+        })
+        .then(msg => {
+            console.log('Email sent:', msg);
+            return res.status(201).json({
+                message: 'User created successfully and email sent',
+                user: newUser
+            });
+        })
+        .catch(err => {
+            console.error('Error sending email:', err);
+            if (picture) deleteFile(picture);
+            return res.status(400).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SEND' });
         });
+
     } catch (error) {
         console.error('Error creating user', error);
         res.status(500).json({ error: 'Server error' });
     }
 };
+
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
