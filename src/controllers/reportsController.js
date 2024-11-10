@@ -2,8 +2,8 @@ const Reports = require('../models/reports');
 
 const createReport = async (req, res) => {
     try {
-        const { state, feed, grammage, animal_id, created_at } = req.body;
-        const newReport = await Reports.create({ state, feed, grammage, animal_id, created_at });
+        const { state, feed, grammage, detailState, animal_id, created_at } = req.body;
+        const newReport = await Reports.create({ state, feed, grammage, detailState, animal_id, created_at });
         res.status(201).json(newReport);
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -19,6 +19,10 @@ const Reports = sequelize.define('reports', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    detailState: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     animal_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

@@ -164,10 +164,26 @@ const deleteAnimal = async (req, res) => {
     }
 };
 
+const incrementView = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const animal = await Animals.findByPk(id);
+        if (animal) {
+            await animal.increment('view');
+            res.status(200).json({ message: 'View incremented successfully' });
+        } else {
+            res.status(404).json({ error: 'Animal not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     createAnimal,
     getAnimals,
     getAnimalById,
     updateAnimal,
-    deleteAnimal
+    deleteAnimal,
+    incrementView
 }; 
