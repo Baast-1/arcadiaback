@@ -6,11 +6,6 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const formData = require('form-data');
-const Mailgun = require('mailgun.js');
-const mailgun = new Mailgun(formData);
-const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
-console.log("Mailgun API Key:", process.env.MAILGUN_API_KEY);
 
 function generatePassword(length) {
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -51,7 +46,6 @@ const getUser = async (req, res) => {
     }
 };
 
-
 const createUser = async (req, res) => {
     const { role = 'admin', firstname, lastname, phone, email } = req.body;
 
@@ -67,31 +61,35 @@ const createUser = async (req, res) => {
             role, firstname, lastname, phone, email, password: hashedPassword,
         });
 
-        mg.messages.create('sandbox-123.mailgun.org', {
-            from: "Excited User <mailgun@sandboxa8928caf774840d9ba9b17e469380c4e.mailgun.org>", 
-            to: [email],
+        const sgMail = require('@sendgrid/mail');
+        const sendGridApiKey = process.env.SENDGRID_API_KEY;
+        if (!sendGridApiKey) {
+            return res.status(500).json({ error: 'SendGrid API key is not defined', errorCode: 'SENDGRID_API_KEY_MISSING' });
+        }
+        console.log('SendGrid API Key:', sendGridApiKey);
+        sgMail.setApiKey(sendGridApiKey);
+        const msg = {
+            to: email, 
+            from: 'arcadia@example.com',
             subject: 'Votre nouveau mot de passe',
             text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`,
             html: `<h1>Bonjour ${firstname},</h1><p>Votre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}</p>`
-        })
-        .then(msg => {
-            console.log('Email sent:', msg);
-            return res.status(201).json({
-                message: 'User created successfully and email sent',
-                user: newUser
+        };
+        sgMail
+            .send(msg)
+            .then(() => {
+                console.log('Email sent');
+                res.status(201).json({ message: 'User created successfully and email sent', user: newUser });
+            })
+            .catch((error) => {
+                console.error('Error sending email:', error);
+                res.status(500).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SENT' });
             });
-        })
-        .catch(err => {
-            console.error('Error sending email:', err);
-            return res.status(400).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SEND' });
-        });
-
     } catch (error) {
         console.error('Error creating user', error);
         res.status(500).json({ error: 'Server error' });
     }
 };
-
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
