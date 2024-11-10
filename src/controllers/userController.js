@@ -53,19 +53,17 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
     const { role = 'admin', firstname, lastname, phone, email } = req.body;
-    const picture = req.file ? req.file.filename : null;
 
     try {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            deleteFile(picture);
             return res.status(400).json({ error: 'Email already in use', errorCode: 'EMAIL_IN_USE' });
         }
 
         const newPassword = generatePassword(8);
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const newUser = await User.create({
-            role, firstname, lastname, phone, email, password: hashedPassword, picture
+            role, firstname, lastname, phone, email, password: hashedPassword,
         });
 
         mg.messages.create('sandbox-123.mailgun.org', {
@@ -84,7 +82,6 @@ const createUser = async (req, res) => {
         })
         .catch(err => {
             console.error('Error sending email:', err);
-            if (picture) deleteFile(picture);
             return res.status(400).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SEND' });
         });
 
