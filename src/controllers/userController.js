@@ -48,7 +48,7 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
     const { role = 'admin', firstname, lastname, phone, email } = req.body;
-
+    console.log('Creating user:', req.body);
     try {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -70,7 +70,7 @@ const createUser = async (req, res) => {
         sgMail.setApiKey(sendGridApiKey);
         const msg = {
             to: email, 
-            from: 'arcadia@example.com',
+            from: 'test@sendgrid.com',
             subject: 'Votre nouveau mot de passe',
             text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`,
             html: `<h1>Bonjour ${firstname},</h1><p>Votre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}</p>`
