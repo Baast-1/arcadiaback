@@ -108,6 +108,15 @@ const updateHabitat = async (req, res) => {
 const deleteHabitat = async (req, res) => {
     try {
         const { id } = req.params;
+        const animals = await Animals.findAll({
+            where: { habitat_id: id }
+        });
+
+        if (animals.length > 0) {
+            return res.status(400).json({
+                error: 'Veuillez d\'abord modifier l\'habitat des animaux associés avant de supprimer cet habitat.'
+            });
+        }
         const pictures = await Pictures.findAll({
             where: { habitat_id: id }
         });
@@ -116,11 +125,15 @@ const deleteHabitat = async (req, res) => {
                 ? picture.route 
                 : path.join(UPLOADS_DIR, path.basename(picture.route));
 
-            fs.unlink(filePath, (err) => {
-                if (err) {
-                    console.error(`Erreur lors de la suppression de l'image : ${filePath}`, err);
-                }
-            });
+            if (fs.existsSync(filePath)) {
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.error(`Erreur lors de la suppression de l'image : ${filePath}`, err);
+                    }
+                });
+            } else {
+                console.warn(`Le fichier n'existe pas : ${filePath}`);
+            }
         });
         await Pictures.destroy({
             where: { habitat_id: id }
