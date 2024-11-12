@@ -19,7 +19,7 @@ const Animals = sequelize.define('animals', {
     },
     view: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
     },
     habitat_id: {
         type: DataTypes.INTEGER,
