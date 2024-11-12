@@ -11,7 +11,7 @@ exports.createAvis = async (req, res) => {
         await newAvis.save();
         res.status(201).json(newAvis);
     } catch (error) {
-        console.error('Erreur lors de la création de l\'avis:', error); // Affiche l'erreur
+        console.error('Erreur lors de la création de l\'avis:', error);
         res.status(500).json({ error: error.message });
     }
 };

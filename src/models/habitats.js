@@ -1,8 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database'); 
-const Pictures = require('./pictures');
-const Comments = require('./comments');
-const Animals = require('./animals');
 
 const Habitats = sequelize.define('habitats', {
     id: {
