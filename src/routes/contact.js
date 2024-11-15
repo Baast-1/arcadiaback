@@ -1,14 +1,16 @@
 const express = require('express');
 const router = express.Router();
-router.use(express.json());
+const nodemailer = require('nodemailer');
 
-const sgMail = require('@sendgrid/mail');
-const sendGridApiKey = process.env.SENDGRID_API_KEY;
-if (!sendGridApiKey) {
-    console.error('SendGrid API key is not defined');
-} else {
-    sgMail.setApiKey(sendGridApiKey);
-}
+// Configurer le transporteur Mailtrap
+let transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+        user: "430530af22850c",
+        pass: "509de0bf66b5ca"
+    }
+});
 
 router.post('/contact', (req, res) => {
     const { title, description, email } = req.body;
@@ -18,24 +20,23 @@ router.post('/contact', (req, res) => {
         return res.status(400).json({ error: 'Tous les champs sont requis' });
     }
 
-    const msg = {
-        to: email, 
-        from: 'arcadia@example.com',
+    let mailOptions = {
+        from: 'no-reply@example.com',
+        to: email,
         subject: title,
         text: description,
         html: description
     };
 
-    sgMail
-        .send(msg)
-        .then(() => {
-            console.log('Email sent');
-            res.status(201).json({ message: 'Email sent successfully' });
-        })
-        .catch((error) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
             console.error('Error sending email:', error);
-            res.status(500).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SENT' });
-        });
+            return res.status(500).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SENT' });
+        } else {
+            console.log('Email sent:', info.response);
+            res.status(201).json({ message: 'Email sent successfully' });
+        }
+    });
 });
 
 module.exports = router;

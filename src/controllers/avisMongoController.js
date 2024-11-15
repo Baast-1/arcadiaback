@@ -25,6 +25,15 @@ exports.getAllAvis = async (req, res) => {
     }
 }
 
+exports.getVisibleAvis = async (req, res) => {
+    try {
+        const visibleAvis = await AvisMongo.find({ isVisible: true });
+        res.status(200).json(visibleAvis);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.putAvis = async (req, res) => {
     try {
         const avis = await AvisMongo.findById(req.params.id);
