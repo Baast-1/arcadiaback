@@ -61,30 +61,28 @@ const createUser = async (req, res) => {
             role, firstname, lastname, phone, email, password: hashedPassword,
         });
 
-        const sgMail = require('@sendgrid/mail');
-        const sendGridApiKey = process.env.SENDGRID_API_KEY;
-        if (!sendGridApiKey) {
-            return res.status(500).json({ error: 'SendGrid API key is not defined', errorCode: 'SENDGRID_API_KEY_MISSING' });
-        }
-        console.log('SendGrid API Key:', sendGridApiKey);
-        sgMail.setApiKey(sendGridApiKey);
-        const msg = {
-            to: email, 
-            from: 'test@sendgrid.com',
+        let transporter = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
+            auth: {
+                user: "430530af22850c",
+                pass: "509de0bf66b5ca"
+            }
+        });
+        let mailOptions = {
+            from: 'no-reply@example.com',
+            to: email,
             subject: 'Votre nouveau mot de passe',
-            text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`,
-            html: `<h1>Bonjour ${firstname},</h1><p>Votre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}</p>`
+            text: `Bonjour ${firstname},\n\nVotre compte a été créé avec succès. Voici votre mot de passe : ${newPassword}\n\nMerci.`
         };
-        sgMail
-            .send(msg)
-            .then(() => {
-                console.log('Email sent');
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                deleteFile(picture);
+                return res.status(400).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SEND' });
+            } else {
                 res.status(201).json({ message: 'User created successfully and email sent', user: newUser });
-            })
-            .catch((error) => {
-                console.error('Error sending email:', error);
-                res.status(500).json({ error: 'Error sending email', errorCode: 'EMAIL_NOT_SENT' });
-            });
+            }
+        });
     } catch (error) {
         console.error('Error creating user', error);
         res.status(500).json({ error: 'Server error' });
